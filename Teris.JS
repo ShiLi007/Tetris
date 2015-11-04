@@ -32,3 +32,17 @@ function drawSquare(x, y) {
 }
 
 
+
+
+//looping over all the tiles to draw the board                 //change the color see what happen 
+function drawBoard() {               
+    fs = ctx.fillStyle;
+    for (var y = 0; y < height; y++) {
+        for (var x = 0; x < width; x++) {
+            ctx.fillStyle = board[y][x] ? 'red' : 'white';
+            drawSquare(x, y, tilesz, tilesz);
+        }
+    }
+    ctx.fillStyle = fs;  
+}
+
