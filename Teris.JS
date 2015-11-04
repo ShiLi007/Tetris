@@ -8,3 +8,27 @@ for (var row = 0; row < 20; row++) {
         board[row][tile] = false;
     }
 }
+
+
+//draw on an HTML canvas                                 //play around the size 
+var canvas = document.getElementById("board");
+var ctx = canvas.getContext("2d");
+var width = 10;
+var height = 20;
+var tilesz = 24;
+canvas.width = width * tilesz;
+canvas.height = height * tilesz;
+
+//fillRect method on ctx for the filled square
+//strokeStyle method on ctx for the hollow squares              //play aorund the color 
+function drawSquare(x, y) {
+    ctx.fillRect(x * tilesz, y * tilesz, tilesz, tilesz);
+    ss = ctx.strokeStyle;
+    ctx.strokeStyle = "#555";
+    ctx.strokeRect(x * tilesz, y * tilesz, tilesz, tilesz);
+    ctx.strokeStyle = "#888";
+    ctx.strokeRect(x * tilesz + 3*tilesz/8, y * tilesz + 3*tilesz/8, tilesz/4, tilesz/4);
+    ctx.strokeStyle = ss;                                      //the gray is alawys gray, try to play aournd see what happen 
+}
+
+
