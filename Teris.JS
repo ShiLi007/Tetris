@@ -131,104 +131,46 @@ Piece.prototype.draw = function(ctx) {
 };
 
 
-//added collisions 
-Piece.prototype.rotate = function() {
-    var nextpat = this.patterns[(this.patterni + 1) % this.patterns.length];
-    if (!this._collides(0, 0, nextpat)) {
-        this.undraw();
-        this.patterni = (this.patterni + 1) % this.patterns.length;
-        this.pattern = this.patterns[this.patterni];
-        this.draw();
-    }
-};
-Piece.prototype.down = function() {
-    if (this._collides(0, 1, this.pattern)) {
-        // Piece hits something and should be locked in place
-        // A new piece should be spawned
-    } else {
-        this.undraw();
-        this.y++;
-        this.draw();
-    }
-};
+//Locking pieces in place
+//take all blocks in the current pattern of the piece, and store them in the game board
+//check every row of the game board whether it is full, and if so, move all rows that are higher up down 
 
-Piece.prototype.moveRight = function() {
-    if (!this._collides(1, 0, this.pattern)) {
-        this.undraw();
-        this.x++;
-        this.draw();
-    }
-};
-
-Piece.prototype.moveLeft = function() {
-    if (!this._collides(-1, 0, this.pattern)) {
-        this.undraw();
-        this.x--;
-        this.draw();
-    }
-};
-
-
-
-Piece.prototype._collides = function(dx, dy, pat) {
-    for (var ix = 0; ix < pat.length; ix++) {
-        for (var iy = 0; iy < pat.length; iy++) {
-            if (!pat[ix][iy]) {
+var lines = 0;
+Piece.prototype.lock = function() {
+    for (var ix = 0; ix < this.pattern.length; ix++) {
+        for (var iy = 0; iy < this.pattern.length; iy++) {
+            if (!this.pattern[ix][iy]) {
                 continue;
             }
 
-            var x = this.x + ix + dx;
-            var y = this.y + iy + dy;
-            if (y >= height || x < 0 || x >= width) {
-                return true;
+//If a piece locks in place, but any one of its blocks are above the top of the game board, then the player has failed, and the game is over
+                if (this.y + iy < 0) {
+                // Game ends!
+                alert("You're done!");
+                done = true;  //to stop the game 
+                return;
             }
-            if (y < 0) {
-                // Ignore negative space rows
-                continue;
-            }
-            if (board[y][x]) {
-                return true;
-            }
+            board[this.y + iy][this.x + ix] = true;  //mark block slot as occupied
         }
     }
-
-    return false;
-};
-
-//key press event listener 
-var dropStart = Date.now();      //keep track of the last time the user made a move
-document.body.addEventListener("keypress", function (e) {
-    if (e.keyCode == 38) { // Player pressed up
-        piece.rotate();
-        dropStart = Date.now();
+    
+    
+//eliminate full rows
+       var nlines = 0;
+    for (var y = 0; y < height; y++) {
+        var line = true;
+        for (var x = 0; x < width; x++) {
+            line = line && !board[y][x];
+        }
+        if (line) {
+            for (var y2 = y; y2 > 1; y2--) {
+                for (var x = 0; x < width; x++) {
+                    board[y2][x] = board[y2-1][x];
+                }
+            }
+            for (var x = 0; x < width; x++) {
+                board[0][x] = false;
+            }
+            nlines++;
+        }
     }
-    if (e.keyCode == 40) { // Player holding down
-        piece.down();
-    }
-    if (e.keyCode == 37) { // Player holding left
-        piece.moveLeft();
-        dropStart = Date.now();
-    }
-    if (e.keyCode == 39) { // Player holding right
-        piece.moveRight();
-        dropStart = Date.now();
-    }
-}, false);
-
-//make the falling piece drop down once every so often
-var done = false;
-function main() {
-    var now = Date.now();
-    var delta = now - dropStart;
-
-    if (delta > 1000) {
-        piece.down();
-        dropStart = now;
-    }
-
-    if (!done) {
-        requestAnimationFrame(main);
-    }
-}
-main();
-
