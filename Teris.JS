@@ -157,20 +157,30 @@ Piece.prototype.lock = function() {
     
 //eliminate full rows
        var nlines = 0;
-    for (var y = 0; y < height; y++) {
-        var line = true;
+    for (var y = 0; y < height; y++) {    // the outer loop is simply looping over all the rows on the board
+        var line = true;                 //For each row, we define a Boolean variable,  line , which should only be set to true if every tile in a row is occupied
+                                         // initializing it to true
         for (var x = 0; x < width; x++) {
-            line = line && !board[y][x];
+            line = line && !board[y][x];   //a logical AND (only true when both the left and right expression are true) with the values of every tile
         }
-        if (line) {
-            for (var y2 = y; y2 > 1; y2--) {
+        if (line) {     //If the row was indeed fully occupied, we need to move down all rows above it. The two nested for loops after the  if  do this for all but the topmost row 
+            for (var y2 = y; y2 > 1; y2--) {   
                 for (var x = 0; x < width; x++) {
-                    board[y2][x] = board[y2-1][x];
+                    board[y2][x] = board[y2-1][x];    //To "move" a row down, we loop over all the tiles of the row that is going to be overwritten, and set each tile's value to be the value of the corresponding tile in the row above
                 }
             }
-            for (var x = 0; x < width; x++) {
+            for (var x = 0; x < width; x++) {    //If any tile is not occupied, it will be set to false, and the AND will become false, making  line  false.
                 board[0][x] = false;
             }
-            nlines++;
+            nlines++;   //increment a counter to keep track of the number of lines that were eliminated by this one piece locking in place
         }
     }
+    
+    
+    //update the player's score
+    if (nlines > 0) {
+        lines += nlines;
+        drawBoard();
+        console.log(lines);
+    }
+};
