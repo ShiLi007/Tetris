@@ -184,3 +184,24 @@ Piece.prototype.lock = function() {
         console.log(lines);
     }
 };
+
+//Spawning new pieces
+
+var pieces = [
+    [I, "cyan"],
+    [J, "blue"],
+    [L, "orange"],
+    [O, "yellow"],
+    [S, "green"],
+    [T, "purple"],
+    [Z, "red"]
+];
+
+
+//pick one of these pairs at random, construct a new object, and then return it.
+function newPiece() {
+    var p = pieces[parseInt(Math.random() * pieces.length, 10)];
+    return new Piece(p[0], p[1]);
+}
+
+
