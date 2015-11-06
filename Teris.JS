@@ -130,6 +130,43 @@ Piece.prototype.draw = function(ctx) {
     this._fill(this.color);
 };
 
+//user input using keboard events
+var dropStart = Date.now();
+document.body.addEventListener("keypress", function (e) {
+    if (e.keyCode == 38) { // Player pressed up
+        piece.rotate();
+        dropStart = Date.now();
+    }
+    if (e.keyCode == 40) { // Player holding down
+        piece.down();
+    }
+    if (e.keyCode == 37) { // Player holding left
+        piece.moveLeft();
+        dropStart = Date.now();
+    }
+    if (e.keyCode == 39) { // Player holding right
+        piece.moveRight();
+        dropStart = Date.now();
+    }
+}, false);
+
+//make the falling piece drop down once every so often
+var done = false;
+function main() {
+    var now = Date.now();
+    var delta = now - dropStart;
+
+    if (delta > 1000) {
+        piece.down();
+        dropStart = now;
+    }
+
+    if (!done) {
+        requestAnimationFrame(main);
+    }
+}
+main();
+
 
 //Locking pieces in place
 //take all blocks in the current pattern of the piece, and store them in the game board
