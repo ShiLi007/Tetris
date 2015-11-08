@@ -12,9 +12,9 @@ canvas.height = height * tilesz;
 //first, make the board.the board will ahve 200 tiles. We will use a 2D list with 20 lists total and each list contain 10 tiles.
 //since all tiles are empaty, we set them to false. 
 var board = [];
-for (var row = 0; row < 20; row++) {
-    board[row] = [];
-    for (var tile = 0; tile < 10; tile++) {
+for (var r = 0; r < 20; r++) {
+    board[r] = [];
+    for (var c = 0; c < 10; c++) {
         board[r][c] = "";
     }
 }
@@ -28,15 +28,15 @@ function newPiece() {
 
 //first we draw the square
 //fillRect method on ctx for the filled square
-//strokeStyle method on ctx for the hollow squares              //play aorund the color 
+//strokeStyle method on ctx for the hollow squares             
 function drawSquare(x, y) {
     ctx.fillRect(x * tilesz, y * tilesz, tilesz, tilesz);
     ss = ctx.strokeStyle;
-    ctx.strokeStyle = "#555";
+    ctx.strokeStyle = "#444";
     ctx.strokeRect(x * tilesz, y * tilesz, tilesz, tilesz);
-    ctx.strokeStyle = "#888";
+    ctx.strokeStyle = "#777";
     ctx.strokeRect(x * tilesz + 3*tilesz/8, y * tilesz + 3*tilesz/8, tilesz/4, tilesz/4);
-    ctx.strokeStyle = ss;                                      //the gray is alawys gray, try to play aournd see what happen 
+    ctx.strokeStyle = ss;                                       
 }
 
 //creates prototype, so tetrominoes know how to draw themselves
@@ -47,14 +47,15 @@ function Piece(patterns, color) {
 
     this.color = color;
 
+    //this.x = width/2-parseInt(Math.ceil(this.pattern.length/2), 10);
     this.x = 0;      //the initial position of the piece at the left cornor above the board so it is invisible 
     this.y = -2;
 }
 
 Piece.prototype.rotate = function() {
-    var nextpat = this.patterns[(this.patterni + 1) % this.patterns.length];
     var nudge = 0;
-
+    var nextpat = this.patterns[(this.patterni + 1) % this.patterns.length];
+ 
     if (this._collides(0, 0, nextpat)) {
         // Check kickback
         nudge = this.x > width / 2 ? -1 : 1;
@@ -125,7 +126,6 @@ Piece.prototype.moveLeft = function() {
 	}
 };
 
-
 //Locking pieces in place
 //take all blocks in the current pattern of the piece, and store them in the game board
 //check every row of the game board whether it is full, and if so, move all rows that are higher up down 
@@ -139,22 +139,21 @@ Piece.prototype.lock = function() {
             }
 
 //If a piece locks in place, but any one of its blocks are above the top of the game board, then the player has failed, and the game is over
-                if (this.y + iy < 0) {
+            if (this.y + iy < 0) {
                 // Game ends!
                 alert("You're done!");
                 done = true;  //to stop the game 
                 return;
             }
-           board[this.y + iy][this.x + ix] = this.color;  //mark block slot as occupied
+            board[this.y + iy][this.x + ix] = this.color;  //mark block slot as occupied
         }
     }
     
     
 //eliminate full rows
-       var nlines = 0;
+    var nlines = 0;
     for (var y = 0; y < height; y++) {    // the outer loop is simply looping over all the rows on the board
-        var line = true;                 //For each row, we define a Boolean variable,  line , which should only be set to true if every tile in a row is occupied
-	                                // initializing it to true
+        var line = true;                  // initializing it to true. For each row, we define a Boolean variable,  line , which should only be set to true if every tile in a row is occupied                          
     	for (var x = 0; x < width; x++) {
            line = line && board[y][x] !== "";  //a logical AND (only true when both the left and right expression are true) with the values of every tile
         }
