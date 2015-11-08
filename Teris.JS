@@ -1,6 +1,16 @@
+//draw on an HTML canvas                                 //play around the size 
+var canvas = document.getElementById("board");
+var ctx = canvas.getContext("2d");
+var linecount = document.getElementById('lines');  //Score counter
+var width = 10;
+var height = 20;
+var tilesz = 24;
+canvas.width = width * tilesz;
+canvas.height = height * tilesz;
+
+
 //first, make the board.the board will ahve 200 tiles. We will use a 2D list with 20 lists total and each list contain 10 tiles.
 //since all tiles are empaty, we set them to false. 
-
 var board = [];
 for (var row = 0; row < 20; row++) {
     board[row] = [];
@@ -8,17 +18,13 @@ for (var row = 0; row < 20; row++) {
         board[row][tile] = false;
     }
 }
-//Score counter
-<span id="lines">Lines: 0</span>
-var linecount = document.getElementById('lines');
-//draw on an HTML canvas                                 //play around the size 
-var canvas = document.getElementById("board");
-var ctx = canvas.getContext("2d");
-var width = 10;
-var height = 20;
-var tilesz = 24;
-canvas.width = width * tilesz;
-canvas.height = height * tilesz;
+
+//pick one of these pairs at random, construct a new object, and then return it.
+function newPiece() {
+    var p = pieces[parseInt(Math.random() * pieces.length, 10)];
+    return new Piece(p[0], p[1]);
+}
+
 
 //first we draw the square
 //fillRect method on ctx for the filled square
@@ -32,6 +38,157 @@ function drawSquare(x, y) {
     ctx.strokeRect(x * tilesz + 3*tilesz/8, y * tilesz + 3*tilesz/8, tilesz/4, tilesz/4);
     ctx.strokeStyle = ss;                                      //the gray is alawys gray, try to play aournd see what happen 
 }
+
+//creates prototype, so tetrominoes know how to draw themselves
+function Piece(patterns, color) {
+    this.pattern = patterns[0];
+    this.patterns = patterns;
+    this.patterni = 0;
+
+    this.color = color;
+
+    this.x = 0;      //the initial position of the piece at the left cornor above the board so it is invisible 
+    this.y = -2;
+}
+
+Piece.prototype.rotate = function() {
+    var nextpat = this.patterns[(this.patterni + 1) % this.patterns.length];
+    var nudge = 0;
+
+    if (this._collides(0, 0, nextpat)) {
+        // Check kickback
+        nudge = this.x > width / 2 ? -1 : 1;
+    }
+
+    if (!this._collides(nudge, 0, nextpat)) {
+        this.undraw();
+        this.x += nudge;
+        this.patterni = (this.patterni + 1) % this.patterns.length;
+        this.pattern = this.patterns[this.patterni];
+        this.draw();
+    }
+};
+
+var WALL = 1;
+var BLOCK = 2;
+
+Piece.prototype._collides = function(dx, dy, pat) {
+	for (var ix = 0; ix < pat.length; ix++) {
+		for (var iy = 0; iy < pat.length; iy++) {
+			if (!pat[ix][iy]) {
+				continue;
+			}
+
+			var x = this.x + ix + dx;
+			var y = this.y + iy + dy;
+			if (y >= height || x < 0 || x >= width) {
+				return WALL;
+			}
+			if (y < 0) {
+				// Ignore negative space rows
+				continue;
+			}
+			if (board[y][x] !== "") {
+				return BLOCK;
+			}
+		}
+	}
+
+	return 0;
+};
+
+Piece.prototype.down = function() {
+	if (this._collides(0, 1, this.pattern)) {
+		this.lock();
+		piece = newPiece();
+	} else {
+		this.undraw();
+		this.y++;
+		this.draw();
+	}
+};
+
+Piece.prototype.moveRight = function() {
+	if (!this._collides(1, 0, this.pattern)) {
+		this.undraw();
+		this.x++;
+		this.draw();
+	}
+};
+
+Piece.prototype.moveLeft = function() {
+	if (!this._collides(-1, 0, this.pattern)) {
+		this.undraw();
+		this.x--;
+		this.draw();
+	}
+};
+
+
+//Locking pieces in place
+//take all blocks in the current pattern of the piece, and store them in the game board
+//check every row of the game board whether it is full, and if so, move all rows that are higher up down 
+
+var lines = 0;
+Piece.prototype.lock = function() {
+    for (var ix = 0; ix < this.pattern.length; ix++) {
+        for (var iy = 0; iy < this.pattern.length; iy++) {
+            if (!this.pattern[ix][iy]) {
+                continue;
+            }
+
+//If a piece locks in place, but any one of its blocks are above the top of the game board, then the player has failed, and the game is over
+                if (this.y + iy < 0) {
+                // Game ends!
+                alert("You're done!");
+                done = true;  //to stop the game 
+                return;
+            }
+           board[this.y + iy][this.x + ix] = this.color;  //mark block slot as occupied
+        }
+    }
+    
+    
+//eliminate full rows
+       var nlines = 0;
+       var done=false;
+    for (var y = 0; y < height; y++) {    // the outer loop is simply looping over all the rows on the board
+        var line = true;                 //For each row, we define a Boolean variable,  line , which should only be set to true if every tile in a row is occupied
+                                         // initializing it to true
+        for (var x = 0; x < width; x++) {
+            line = line && !board[y][x];   //a logical AND (only true when both the left and right expression are true) with the values of every tile
+        }
+        if (line) {     //If the row was indeed fully occupied, we need to move down all rows above it. The two nested for loops after the  if  do this for all but the topmost row 
+            for (var y2 = y; y2 > 1; y2--) {   
+                for (var x = 0; x < width; x++) {
+                    board[y2][x] = board[y2-1][x];    //To "move" a row down, we loop over all the tiles of the row that is going to be overwritten, and set each tile's value to be the value of the corresponding tile in the row above
+                }
+            }
+            for (var x = 0; x < width; x++) {    //If any tile is not occupied, it will be set to false, and the AND will become false, making  line  false.
+                board[0][x] = false;
+            }
+            nlines++;   //increment a counter to keep track of the number of lines that were eliminated by this one piece locking in place
+        }
+    }
+    
+    
+    //update the player's score
+    if (nlines > 0) {
+        lines += nlines;
+        drawBoard();
+        linecount.textContent = "Lines: " + lines;
+    }
+};
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -52,17 +209,7 @@ function drawBoard() {
 
 
 
-//creates prototype, so tetrominoes know how to draw themselves
-function Piece(patterns, color) {
-    this.pattern = patterns[0];
-    this.patterns = patterns;
-    this.patterni = 0;
 
-    this.color = color;
-
-    this.x = 0;      //the initial position of the piece at the left cornor above the board so it is invisible 
-    this.y = -2;
-}
 
 /* Piece.prototype.draw = function() {
     fs = ctx.fillStyle;
@@ -99,23 +246,7 @@ Piece.prototype.moveLeft = function() {
     this.draw();
 };
 
-Piece.prototype.rotate = function() {
-    var nextpat = this.patterns[(this.patterni + 1) % this.patterns.length];
-    var nudge = 0;
 
-    if (this._collides(0, 0, nextpat)) {
-        // Check kickback
-        nudge = this.x > width / 2 ? -1 : 1;
-    }
-
-    if (!this._collides(nudge, 0, nextpat)) {
-        this.undraw();
-        this.x += nudge;
-        this.patterni = (this.patterni + 1) % this.patterns.length;
-        this.pattern = this.patterns[this.patterni];
-        this.draw();
-    }
-};
 
 //helper function that draw and undraw can call 
 Piece.prototype._fill = function(color) {
@@ -198,59 +329,6 @@ function main() {
 main();
 
 
-//Locking pieces in place
-//take all blocks in the current pattern of the piece, and store them in the game board
-//check every row of the game board whether it is full, and if so, move all rows that are higher up down 
-
-var lines = 0;
-Piece.prototype.lock = function() {
-    for (var ix = 0; ix < this.pattern.length; ix++) {
-        for (var iy = 0; iy < this.pattern.length; iy++) {
-            if (!this.pattern[ix][iy]) {
-                continue;
-            }
-
-//If a piece locks in place, but any one of its blocks are above the top of the game board, then the player has failed, and the game is over
-                if (this.y + iy < 0) {
-                // Game ends!
-                alert("You're done!");
-                done = true;  //to stop the game 
-                return;
-            }
-           board[this.y + iy][this.x + ix] = this.color;  //mark block slot as occupied
-        }
-    }
-    
-    
-//eliminate full rows
-       var nlines = 0;
-    for (var y = 0; y < height; y++) {    // the outer loop is simply looping over all the rows on the board
-        var line = true;                 //For each row, we define a Boolean variable,  line , which should only be set to true if every tile in a row is occupied
-                                         // initializing it to true
-        for (var x = 0; x < width; x++) {
-            line = line && !board[y][x];   //a logical AND (only true when both the left and right expression are true) with the values of every tile
-        }
-        if (line) {     //If the row was indeed fully occupied, we need to move down all rows above it. The two nested for loops after the  if  do this for all but the topmost row 
-            for (var y2 = y; y2 > 1; y2--) {   
-                for (var x = 0; x < width; x++) {
-                    board[y2][x] = board[y2-1][x];    //To "move" a row down, we loop over all the tiles of the row that is going to be overwritten, and set each tile's value to be the value of the corresponding tile in the row above
-                }
-            }
-            for (var x = 0; x < width; x++) {    //If any tile is not occupied, it will be set to false, and the AND will become false, making  line  false.
-                board[0][x] = false;
-            }
-            nlines++;   //increment a counter to keep track of the number of lines that were eliminated by this one piece locking in place
-        }
-    }
-    
-    
-    //update the player's score
-    if (nlines > 0) {
-        lines += nlines;
-        drawBoard();
-        linecount.textContent = "Lines: " + lines;
-    }
-};
 
 //Spawning new pieces
 
@@ -265,11 +343,7 @@ var pieces = [
 ];
 
 
-//pick one of these pairs at random, construct a new object, and then return it.
-function newPiece() {
-    var p = pieces[parseInt(Math.random() * pieces.length, 10)];
-    return new Piece(p[0], p[1]);
-}
+
 
 
 piece = newPiece();
