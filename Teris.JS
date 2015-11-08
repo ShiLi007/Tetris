@@ -242,3 +242,7 @@ function newPiece() {
 }
 
 
+piece = newPiece();
+drawBoard();
+linecount.textContent = "Lines: 0";
+main();
