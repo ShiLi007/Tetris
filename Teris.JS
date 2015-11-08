@@ -15,7 +15,7 @@ var board = [];
 for (var row = 0; row < 20; row++) {
     board[row] = [];
     for (var tile = 0; tile < 10; tile++) {
-        board[row][tile] = false;
+        board[r][c] = "";
     }
 }
 
@@ -156,7 +156,7 @@ Piece.prototype.lock = function() {
         var line = true;                 //For each row, we define a Boolean variable,  line , which should only be set to true if every tile in a row is occupied
 	                                // initializing it to true
     	for (var x = 0; x < width; x++) {
-            line = line && !board[y][x];  //a logical AND (only true when both the left and right expression are true) with the values of every tile
+           line = line && board[y][x] !== "";  //a logical AND (only true when both the left and right expression are true) with the values of every tile
         }
         if (line) {     //If the row was indeed fully occupied, we need to move down all rows above it. The two nested for loops after the  if  do this for all but the topmost row 
             for (var y2 = y; y2 > 1; y2--) {   
@@ -165,7 +165,7 @@ Piece.prototype.lock = function() {
                 }
             }
             for (var x = 0; x < width; x++) {    //If any tile is not occupied, it will be set to false, and the AND will become false, making  line  false.
-                board[0][x] = false;
+                board[0][x] = "";
             }
             nlines++;   //increment a counter to keep track of the number of lines that were eliminated by this one piece locking in place
         }
