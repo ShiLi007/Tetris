@@ -12,9 +12,9 @@ canvas.height = height * tilesz;
 //first, make the board.the board will ahve 200 tiles. We will use a 2D list with 20 lists total and each list contain 10 tiles.
 //since all tiles are empaty, we set them to false. 
 var board = [];
-for (var r = 0; r < 20; r++) {
+for (var r = 0; r < height; r++) {
     board[r] = [];
-    for (var c = 0; c < 10; c++) {
+    for (var c = 0; c < width; c++) {
         board[r][c] = "";
     }
 }
