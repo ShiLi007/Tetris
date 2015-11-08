@@ -8,8 +8,9 @@ for (var row = 0; row < 20; row++) {
         board[row][tile] = false;
     }
 }
-
-
+//Score counter
+<span id="lines">Lines: 0</span>
+var linecount = document.getElementById('lines');
 //draw on an HTML canvas                                 //play around the size 
 var canvas = document.getElementById("board");
 var ctx = canvas.getContext("2d");
@@ -40,7 +41,7 @@ function drawBoard() {
     fs = ctx.fillStyle;
     for (var y = 0; y < height; y++) {
         for (var x = 0; x < width; x++) {
-            ctx.fillStyle = board[y][x] ? 'red' : 'white';
+            ctx.fillStyle = board[y][x] || "white";
             drawSquare(x, y, tilesz, tilesz);                    //call back ????
         }
     }
@@ -99,12 +100,22 @@ Piece.prototype.moveLeft = function() {
 };
 
 Piece.prototype.rotate = function() {
-    this.undraw();
-    this.patterni = (this.patterni + 1) % this.patterns.length;
-    this.pattern = this.patterns[this.patterni];
-    this.draw();
-};
+    var nextpat = this.patterns[(this.patterni + 1) % this.patterns.length];
+    var nudge = 0;
 
+    if (this._collides(0, 0, nextpat)) {
+        // Check kickback
+        nudge = this.x > width / 2 ? -1 : 1;
+    }
+
+    if (!this._collides(nudge, 0, nextpat)) {
+        this.undraw();
+        this.x += nudge;
+        this.patterni = (this.patterni + 1) % this.patterns.length;
+        this.pattern = this.patterns[this.patterni];
+        this.draw();
+    }
+};
 
 //helper function that draw and undraw can call 
 Piece.prototype._fill = function(color) {
@@ -187,7 +198,7 @@ Piece.prototype.lock = function() {
                 done = true;  //to stop the game 
                 return;
             }
-            board[this.y + iy][this.x + ix] = true;  //mark block slot as occupied
+           board[this.y + iy][this.x + ix] = this.color;  //mark block slot as occupied
         }
     }
     
