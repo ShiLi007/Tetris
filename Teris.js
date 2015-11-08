@@ -32,9 +32,9 @@ function newPiece() {
 function drawSquare(x, y) {
     ctx.fillRect(x * tilesz, y * tilesz, tilesz, tilesz);
     ss = ctx.strokeStyle;
-    ctx.strokeStyle = "#444";
+    ctx.strokeStyle = "#555";
     ctx.strokeRect(x * tilesz, y * tilesz, tilesz, tilesz);
-    ctx.strokeStyle = "#777";
+    ctx.strokeStyle = "#888";
     ctx.strokeRect(x * tilesz + 3*tilesz/8, y * tilesz + 3*tilesz/8, tilesz/4, tilesz/4);
     ctx.strokeStyle = ss;                                       
 }
