@@ -46,8 +46,7 @@ function Piece(patterns, color) {
     this.patterni = 0;
 
     this.color = color;
-
-    //this.x = width/2-parseInt(Math.ceil(this.pattern.length/2), 10);
+    
     this.x = 0;      //the initial position of the piece at the left cornor above the board so it is invisible 
     this.y = -2;
 }
@@ -255,13 +254,13 @@ function key(k) {
 	}
 }
 
-//looping over all the tiles to draw the board                 //change the color see what happen 
+//looping over all the tiles to draw the board                 
 function drawBoard() {               
-    fs = ctx.fillStyle;
+    var fs = ctx.fillStyle;
     for (var y = 0; y < height; y++) {
         for (var x = 0; x < width; x++) {
-            ctx.fillStyle = board[y][x] || "white";
-            drawSquare(x, y, tilesz, tilesz);                    //call back ????
+            ctx.fillStyle = board[y][x] || clear;
+            drawSquare(x, y, tilesz, tilesz);                   
         }
     }
     ctx.fillStyle = fs;  
