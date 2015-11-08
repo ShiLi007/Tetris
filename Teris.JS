@@ -97,6 +97,7 @@ Piece.prototype._collides = function(dx, dy, pat) {
 	return 0;
 };
 
+//moving the tetrominoes
 Piece.prototype.down = function() {
 	if (this._collides(0, 1, this.pattern)) {
 		this.lock();
@@ -128,8 +129,8 @@ Piece.prototype.moveLeft = function() {
 //Locking pieces in place
 //take all blocks in the current pattern of the piece, and store them in the game board
 //check every row of the game board whether it is full, and if so, move all rows that are higher up down 
-
 var lines = 0;
+var done=false;
 Piece.prototype.lock = function() {
     for (var ix = 0; ix < this.pattern.length; ix++) {
         for (var iy = 0; iy < this.pattern.length; iy++) {
@@ -151,12 +152,11 @@ Piece.prototype.lock = function() {
     
 //eliminate full rows
        var nlines = 0;
-       var done=false;
     for (var y = 0; y < height; y++) {    // the outer loop is simply looping over all the rows on the board
         var line = true;                 //For each row, we define a Boolean variable,  line , which should only be set to true if every tile in a row is occupied
-                                         // initializing it to true
-        for (var x = 0; x < width; x++) {
-            line = line && !board[y][x];   //a logical AND (only true when both the left and right expression are true) with the values of every tile
+	                                // initializing it to true
+    	for (var x = 0; x < width; x++) {
+            line = line && !board[y][x];  //a logical AND (only true when both the left and right expression are true) with the values of every tile
         }
         if (line) {     //If the row was indeed fully occupied, we need to move down all rows above it. The two nested for loops after the  if  do this for all but the topmost row 
             for (var y2 = y; y2 > 1; y2--) {   
@@ -180,77 +180,9 @@ Piece.prototype.lock = function() {
     }
 };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-//looping over all the tiles to draw the board                 //change the color see what happen 
-function drawBoard() {               
-    fs = ctx.fillStyle;
-    for (var y = 0; y < height; y++) {
-        for (var x = 0; x < width; x++) {
-            ctx.fillStyle = board[y][x] || "white";
-            drawSquare(x, y, tilesz, tilesz);                    //call back ????
-        }
-    }
-    ctx.fillStyle = fs;  
-}
-
-
-
-
-
-
-
-/* Piece.prototype.draw = function() {
-    fs = ctx.fillStyle;
-    ctx.fillStyle = this.color;
-    for (var ix = 0; ix < this.pattern.length; ix++) {
-        for (var iy = 0; iy < this.pattern.length; iy++) {
-            if (this.pattern[ix][iy]) {
-                drawSquare(this.x + ix, this.y + iy);                 //call back ????
-            }
-        }
-    }
-    ctx.fillStyle = fs;
-};
-
-*/
-
-
-//moving the tetrominoes
-Piece.prototype.down = function() {
-    this.undraw();
-    this.y++;
-    this.draw();
-};
-
-Piece.prototype.moveRight = function() {
-    this.undraw();
-    this.x++;
-    this.draw();
-};
-
-Piece.prototype.moveLeft = function() {
-    this.undraw();
-    this.x--;
-    this.draw();
-};
-
-
-
 //helper function that draw and undraw can call 
 Piece.prototype._fill = function(color) {
-    fs = ctx.fillStyle;
+    var fs = ctx.fillStyle;
     ctx.fillStyle = color;
     var x = this.x;
     var y = this.y;
@@ -271,6 +203,20 @@ Piece.prototype.undraw = function(ctx) {
 Piece.prototype.draw = function(ctx) {
     this._fill(this.color);
 };
+
+
+//Spawning new pieces
+var pieces = [
+    [I, "cyan"],
+    [J, "blue"],
+    [L, "orange"],
+    [O, "yellow"],
+    [S, "green"],
+    [T, "purple"],
+    [Z, "red"]
+];
+
+var piece=null;
 
 //user input using keboard events
 var dropStart = Date.now();
@@ -310,9 +256,19 @@ function key(k) {
 	}
 }
 
+//looping over all the tiles to draw the board                 //change the color see what happen 
+function drawBoard() {               
+    fs = ctx.fillStyle;
+    for (var y = 0; y < height; y++) {
+        for (var x = 0; x < width; x++) {
+            ctx.fillStyle = board[y][x] || "white";
+            drawSquare(x, y, tilesz, tilesz);                    //call back ????
+        }
+    }
+    ctx.fillStyle = fs;  
+}
 
 //make the falling piece drop down once every so often
-var done = false;
 function main() {
     var now = Date.now();
     var delta = now - dropStart;
@@ -326,22 +282,6 @@ function main() {
         requestAnimationFrame(main);
     }
 }
-main();
-
-
-
-//Spawning new pieces
-
-var pieces = [
-    [I, "cyan"],
-    [J, "blue"],
-    [L, "orange"],
-    [O, "yellow"],
-    [S, "green"],
-    [T, "purple"],
-    [Z, "red"]
-];
-
 
 
 
